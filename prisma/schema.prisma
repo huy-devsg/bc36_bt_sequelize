@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model food {
+  food_id     Int        @id @default(autoincrement())
+  food_name   String?    @db.VarChar(255)
+  image       String?    @db.VarChar(255)
+  price       Float?     @db.Float
+  description String?    @db.VarChar(255)
+  type_id     Int?
+  food_type   food_type? @relation(fields: [type_id], references: [type_id], onDelete: NoAction, onUpdate: NoAction, map: "food_ibfk_1")
+  orders      orders[]
+
+  @@index([type_id], map: "type_id")
+}
+
+model food_type {
+  type_id   Int     @id @default(autoincrement())
+  type_name String? @db.VarChar(255)
+  food      food[]
+}
+
+model like_restaurant {
+  like_id     Int         @id @default(autoincrement())
+  date_create DateTime?   @db.DateTime(0)
+  dis_like    Boolean?
+  user_id     Int?
+  res_id      Int?
+  users       users?      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "like_restaurant_ibfk_1")
+  restaurant  restaurant? @relation(fields: [res_id], references: [res_id], onDelete: NoAction, onUpdate: NoAction, map: "like_restaurant_ibfk_2")
+
+  @@index([res_id], map: "res_id")
+  @@index([user_id], map: "user_id")
+}
+
+model orders {
+  order_id Int    @id @default(autoincrement())
+  food_id  Int?
+  user_id  Int?
+  users    users? @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_1")
+  food     food?  @relation(fields: [food_id], references: [food_id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_2")
+
+  @@index([food_id], map: "food_id")
+  @@index([user_id], map: "user_id")
+}
+
+model rate_restaurant {
+  rate_id      Int         @id @default(autoincrement())
+  rate_comment String?     @db.VarChar(255)
+  user_id      Int?
+  res_id       Int?
+  users        users?      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "rate_restaurant_ibfk_1")
+  restaurant   restaurant? @relation(fields: [res_id], references: [res_id], onDelete: NoAction, onUpdate: NoAction, map: "rate_restaurant_ibfk_2")
+
+  @@index([res_id], map: "res_id")
+  @@index([user_id], map: "user_id")
+}
+
+model restaurant {
+  res_id          Int               @id @default(autoincrement())
+  res_name        String?           @db.VarChar(255)
+  image           String?           @db.VarChar(255)
+  description     String?           @db.VarChar(255)
+  like_restaurant like_restaurant[]
+  rate_restaurant rate_restaurant[]
+}
+
+model users {
+  user_id         Int               @id @default(autoincrement())
+  full_name       String?           @db.VarChar(255)
+  email           String?           @unique(map: "email") @db.VarChar(255)
+  avatar          String?           @db.VarChar(255)
+  pass_word       String?           @db.VarChar(255)
+  face_app_id     String?           @db.VarChar(255)
+  role            String?           @db.VarChar(50)
+  like_restaurant like_restaurant[]
+  orders          orders[]
+  rate_restaurant rate_restaurant[]
+}
